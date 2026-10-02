@@ -1,1 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ethiopian Adventure Runner - 10 Cultural Levels</title>
+  <style>
+    :root {
+      --ethiopia-green: #009b48;
+      --ethiopia-yellow: #ffde00;
+      --ethiopia-red: #d92121;
+      --bg-dark: #121214;
+      --panel-bg: #1e1e24;
+    }
 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #f0f0f0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    #app-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      max-width: 900px;
+      width: 100%;
+      padding: 16px;
+    }
+
+    header {
+      text-align: center;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--panel-bg);
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      border-bottom: 4px solid var(--ethiopia-yellow);
+    }
+
+    .title-group h1 {
+      font-size: 1.4rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flag-badge {
+      display: inline-flex;
+      height: 16px;
+      width: 30px;
+      border-radius: 2px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .flag-badge span { flex: 1; }
+    .bg-green { background: var(--ethiopia-green); }
+    .bg-yellow { background: var(--ethiopia-yellow); }
+    .bg-red { background: var(--ethiopia-red); }
+
+    #canvas-holder {
+      position: relative;
+      width: 100%;
+      max-width: 850px;
+      aspect-ratio: 8 / 3;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      border: 3px solid #333;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .controls-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      background: var(--panel-bg);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .key-badge {
+      background: #333;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      border: 1px solid #555;
+    }
+
+    /* On-screen mobile touch controls */
+    .touch-controls {
+      display: flex;
+      gap: 16px;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .touch-btn {
+      flex: 1;
+      padding: 14px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      background: #2a2a35;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #15151e;
+      transition: all 0.1s ease;
+    }
+
+    .touch-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #15151e;
+      background: #3a3a48;
+    }
+
+    .dev-tools {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    select {
+      background: #2a2a35;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  <header>
+    <div class="title-group">
+      <div class="flag-badge">
+        <span class="bg-green"></span>
+        <span class="bg-yellow"></span>
+        <span class="bg-red"></span>
+      </div>
+      <h1>Ethiopian Adventure Runner</h1>
+    </div>
+    
+    <div class="dev-tools">
+      <label for="levelSelect">Jump to Level: </label>
+      <select id="levelSelect">
+        <option value="1">Lvl 1: Addis Ababa (0pt)</option>
+        <option value="2">Lvl 2: Rift Valley (1k)</option>
+        <option value="3">Lvl 3: Axum Empire (2k)</option>
+        <option value="4">Lvl 4: Lalibela (3k)</option>
+        <option value="5">Lvl 5: Gondar Castles (4k)</option>
+        <option value="6">Lvl 6: Simien Mounts (5k)</option>
+        <option value="7">Lvl 7: Harar Jugol (6k)</option>
+        <option value="8">Lvl 8: Rome 1960 - Bikila (7k)</option>
+        <option value="9">Lvl 9: Battle of Adwa (8k)</option>
+        <option value="10">⚡ Lvl 10: Danakil Lava Run (9k FAST)</option>
+      </select>
+    </div>
+  </header>
+
+  <div id="canvas-holder">
+    <canvas id="gameCanvas" width="850" height="320"></canvas>
+  </div>
+
+  <div class="controls-panel">
+    <div><strong>Controls:</strong> <span class="key-badge">SPACE / UP / TAP</span> Jump | <span class="key-badge">DOWN / S</span> Duck</div>
+    <div>Goal: Reach <strong>10,000 Points</strong> to Win!</div>
+  </div>
+
+  <div class="touch-controls">
+    <button class="touch-btn" id="btnDuck">👇 DUCK</button>
+    <button class="touch-btn" id="btnJump" style="background: var(--ethiopia-green); color: #fff;">⬆️ JUMP</button>
+  </div>
+</div>
+
+<script>
+  // Web Audio API Sound Synthesizer (No external asset files needed)
+  const AudioEngine = {
+    ctx: null,
+    init() {
+      if (!this.ctx) {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    },
+    playJump() {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.15);
+    },
+    playCoin() {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(987.77, this.ctx.currentTime); // B5
+      osc.frequency.setValueAtTime(1318.51, this.ctx.currentTime + 0.08); // E6
+      gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.25);
+    },
+    playLevelUp() {
+      if (!this.ctx) return;
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C E G C
+      notes.forEach((freq, i) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime + i * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.08 + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(this.ctx.currentTime + i * 0.08);
+        osc.stop(this.ctx.currentTime + i * 0.08 + 0.2);
+      });
+    },
+    playHit() {
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.3);
+    }
+  };
+
+  const LEVEL_CONFIGS = [
+    {
+      lvl: 1,
+      name: "Addis Ababa Streets",
+      hero: "City Kid",
+      heroColor: "#009b48",
+      bgGradient: ["#87CEEB", "#E0F6FF"],
+      groundColor: "#444444",
+      accentColor: "#f1c40f",
+      obstacleTypes: ["taxi", "cone"],
+      flyingTypes: ["pigeon"],
+      description: "Welcome to Addis Ababa! Watch out for Blue Lada Taxis."
+    },
+    {
+      lvl: 2,
+      name: "Great Rift Valley",
+      hero: "Lucy (Australopithecus)",
+      heroColor: "#d35400",
+      bgGradient: ["#f39c12", "#f9e79f"],
+      groundColor: "#a0522d",
+      accentColor: "#27ae60",
+      obstacleTypes: ["termite_mound", "acacia_thorn"],
+      flyingTypes: ["eagle"],
+      description: "Cradle of Humanity! Leap over ancient termite mounds."
+    },
+    {
+      lvl: 3,
+      name: "Axum Kingdom",
+      hero: "Axumite Royal",
+      heroColor: "#8e44ad",
+      bgGradient: ["#2c3e50", "#bdc3c7"],
+      groundColor: "#7f8c8d",
+      accentColor: "#f39c12",
+      obstacleTypes: ["stela_base", "urn"],
+      flyingTypes: ["falcon"],
+      description: "Land of Ancient Stelae & Great Obelisks."
+    },
+    {
+      lvl: 4,
+      name: "Lalibela Rock Churches",
+      hero: "Ethiopian Monk",
+      heroColor: "#f39c12",
+      bgGradient: ["#d35400", "#edbb99"],
+      groundColor: "#8b4513",
+      accentColor: "#e74c3c",
+      obstacleTypes: ["rock_cross", "trench"],
+      flyingTypes: ["raven"],
+      description: "Monolithic Rock-Hewn Churches of Lalibela."
+    },
+    {
+      lvl: 5,
+      name: "Gondar Royal Enclosure",
+      hero: "Emperor Fasilides",
+      heroColor: "#2980b9",
+      bgGradient: ["#34495e", "#7f8c8d"],
+      groundColor: "#555555",
+      accentColor: "#f1c40f",
+      obstacleTypes: ["castle_wall", "barrel"],
+      flyingTypes: ["bat"],
+      description: "The Camelot of Africa! Navigate the stone fortresses."
+    },
+    {
+      lvl: 6,
+      name: "Simien Mountains",
+      hero: "Walia Ibex Runner",
+      heroColor: "#27ae60",
+      bgGradient: ["#16a085", "#a3e4d7"],
+      groundColor: "#2e7d32",
+      accentColor: "#8e44ad",
+      obstacleTypes: ["sharp_boulder", "bush"],
+      flyingTypes: ["vulture"],
+      description: "High altitude peaks & Gelada baboon territory!"
+    },
+    {
+      lvl: 7,
+      name: "Harar Jugol (Walled City)",
+      hero: "Harari Trader",
+      heroColor: "#e67e22",
+      bgGradient: ["#e74c3c", "#fad7a0"],
+      groundColor: "#d35400",
+      accentColor: "#16a085",
+      obstacleTypes: ["spice_sack", "hyena"],
+      flyingTypes: ["hawk"],
+      description: "The historic Walled City! Hyenas prowl nearby."
+    },
+    {
+      lvl: 8,
+      name: "Rome 1960 Olympics",
+      hero: "Abebe Bikila (Barefoot)",
+      heroColor: "#2196F3",
+      bgGradient: ["#2980b9", "#85c1e9"],
+      groundColor: "#795548",
+      accentColor: "#ffeb3b",
+      obstacleTypes: ["hurdle", "classic_car"],
+      flyingTypes: ["arch_low"],
+      description: "Barefoot Marathon Legend! Abebe Bikila running for Gold."
+    },
+    {
+      lvl: 9,
+      name: "Battle of Adwa (1896)",
+      hero: "Emperor Menelik II",
+      heroColor: "#b71c1c",
+      bgGradient: ["#4a148c", "#ab47bc"],
+      groundColor: "#3e2723",
+      accentColor: "#ffb300",
+      obstacleTypes: ["cannon", "sandbag"],
+      flyingTypes: ["smoke_cloud"],
+      description: "Defending Sovereignty! Historic Victory of Adwa."
+    },
+    {
+      lvl: 10,
+      name: "Danakil Lava Sprint",
+      hero: "Warrior of Fire",
+      heroColor: "#ff3d00",
+      bgGradient: ["#210000", "#bf360c"],
+      groundColor: "#1b0000",
+      accentColor: "#ffea00",
+      obstacleTypes: ["lava_crack", "salt_pillar"],
+      flyingTypes: ["fireball"],
+      description: "⚡ ULTRA SPEED SPRINT! Cross the hottest place on Earth!"
+    }
+  ];
+
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+
+  // Game Engine State
+  let game = {
+    score: 0,
+    level: 1,
+    gameSpeed: 6,
+    isGameOver: false,
+    isGameWon: false,
+    frameCount: 0,
+    lives: 3,
+    bunaBoost: 0, // Shield timer
+    particles: [],
+    obstacles: [],
+    collectibles: [],
+    notifications: []
+  };
+
+  // Player State
+  const player = {
+    x: 70,
+    y: 220,
+    width: 36,
+    height: 56,
+    baseHeight: 56,
+    duckHeight: 30,
+    velocityY: 0,
+    gravity: 0.7,
+    isJumping: false,
+    isDucking: false,
+    jumpStrength: -13.5,
+    groundY: 220
+  };
+
+  // Input Handling
+  const keys = {};
+
+  window.addEventListener("keydown", (e) => {
+    AudioEngine.init();
+    if (["Space", "ArrowUp", "KeyW"].includes(e.code)) {
+      e.preventDefault();
+      triggerJump();
+    }
+    if (["ArrowDown", "KeyS"].includes(e.code)) {
+      e.preventDefault();
+      triggerDuck(true);
+    }
+    if (e.code === "KeyR" && (game.isGameOver || game.isGameWon)) {
+      resetGame();
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (["ArrowDown", "KeyS"].includes(e.code)) {
+      triggerDuck(false);
+    }
+  });
+
+  // Touch Controls
+  document.getElementById("btnJump").addEventListener("touchstart", (e) => { e.preventDefault(); AudioEngine.init(); triggerJump(); });
+  document.getElementById("btnJump").addEventListener("mousedown", (e) => { AudioEngine.init(); triggerJump(); });
+
+  const duckBtn = document.getElementById("btnDuck");
+  duckBtn.addEventListener("touchstart", (e) => { e.preventDefault(); triggerDuck(true); });
+  duckBtn.addEventListener("touchend", (e) => { e.preventDefault(); triggerDuck(false); });
+  duckBtn.addEventListener("mousedown", () => triggerDuck(true));
+  duckBtn.addEventListener("mouseup", () => triggerDuck(false));
+
+  // Level selector quick jump for debugging/testing
+  document.getElementById("levelSelect").addEventListener("change", (e) => {
+    const selectedLvl = parseInt(e.target.value);
+    game.score = (selectedLvl - 1) * 1000;
+    if (selectedLvl === 10) game.score = 9000;
+    game.isGameOver = false;
+    game.isGameWon = false;
+    game.obstacles = [];
+    game.collectibles = [];
+    showNotification(`Jumped to Level ${selectedLvl}!`);
+    AudioEngine.playLevelUp();
+  });
+
+  function triggerJump() {
+    if (game.isGameOver || game.isGameWon) {
+      resetGame();
+      return;
+    }
+    if (!player.isJumping) {
+      player.velocityY = player.jumpStrength;
+      player.isJumping = true;
+      AudioEngine.playJump();
+      createParticles(player.x + player.width / 2, player.y + player.height, 8, "#aaa");
+    }
+  }
+
+  function triggerDuck(ducking) {
+    player.isDucking = ducking;
+    if (ducking) {
+      player.height = player.duckHeight;
+      if (!player.isJumping) player.y = player.groundY + (player.baseHeight - player.duckHeight);
+    } else {
+      player.height = player.baseHeight;
+      if (!player.isJumping) player.y = player.groundY;
+    }
+  }
+
+  function createParticles(x, y, count, color) {
+    for (let i = 0; i < count; i++) {
+      game.particles.push({
+        x: x,
+        y: y,
+        vx: (Math.random() - 0.5) * 4,
+        vy: (Math.random() - 0.8) * 3,
+        size: Math.random() * 4 + 2,
+        color: color,
+        life: 20
+      });
+    }
+  }
+
+  function showNotification(msg) {
+    game.notifications.push({ text: msg, alpha: 1.0, y: 120 });
+  }
+
+  function updateLevelAndDifficulty() {
+    if (game.score >= 10000) {
+      game.isGameWon = true;
+      return;
+    }
+
+    // Level formula: 1,000 points per level
+    const currentLvl = Math.min(10, Math.floor(game.score / 1000) + 1);
+
+    if (currentLvl !== game.level) {
+      game.level = currentLvl;
+      document.getElementById("levelSelect").value = game.level;
+      AudioEngine.playLevelUp();
+      showNotification(`LEVEL ${game.level}: ${LEVEL_CONFIGS[game.level - 1].name}!`);
+      createParticles(canvas.width / 2, canvas.height / 2, 40, "#ffde00");
+    }
+
+    // Speed calculation
+    if (game.level < 10) {
+      game.gameSpeed = 6 + (game.level * 0.9);
+    } else {
+      // LEVEL 10 FAST SPRINT CHALLENGE
+      game.gameSpeed = 15;
+    }
+  }
+
+  function spawnEntities() {
+    const cfg = LEVEL_CONFIGS[game.level - 1];
+
+    // Spawn Ground / Flying Obstacles
+    let spawnRate = Math.max(35, Math.floor(100 / (game.gameSpeed / 5)));
+    if (game.frameCount % spawnRate === 0 && Math.random() < 0.75) {
+      const isFlying = Math.random() < 0.3;
+
+      if (isFlying) {
+        game.obstacles.push({
+          x: canvas.width,
+          y: player.groundY - 35 - (Math.random() > 0.5 ? 40 : 0), // Requires ducking or careful jump
+          width: 28,
+          height: 22,
+          isFlying: true,
+          type: cfg.flyingTypes[0]
+        });
+      } else {
+        game.obstacles.push({
+          x: canvas.width,
+          y: player.groundY + (player.baseHeight - 38),
+          width: 26,
+          height: 38,
+          isFlying: false,
+          type: cfg.obstacleTypes[Math.floor(Math.random() * cfg.obstacleTypes.length)]
+        });
+      }
+    }
+
+    // Spawn Collectibles (Buna ☕, Injera 🫓, Axum Coin 🪙)
+    if (game.frameCount % 180 === 0 && Math.random() < 0.6) {
+      const types = ["coin", "buna", "injera"];
+      const randType = types[Math.floor(Math.random() * types.length)];
+      game.collectibles.push({
+        x: canvas.width,
+        y: player.groundY - 20 - Math.random() * 60,
+        width: 22,
+        height: 22,
+        type: randType
+      });
+    }
+  }
+
+  function update() {
+    if (game.isGameOver || game.isGameWon) return;
+
+    game.frameCount++;
+    game.score += 2; // Continuous score progression
+    updateLevelAndDifficulty();
+
+    if (game.bunaBoost > 0) game.bunaBoost--;
+
+    // Player Physics
+    player.velocityY += player.gravity;
+    player.y += player.velocityY;
+
+    const currentGround = player.isDucking ? player.groundY + (player.baseHeight - player.duckHeight) : player.groundY;
+
+    if (player.y >= currentGround) {
+      player.y = currentGround;
+      player.velocityY = 0;
+      player.isJumping = false;
+    }
+
+    // Spawn Entities
+    spawnEntities();
+
+    // Update Obstacles & Collision Check
+    for (let i = game.obstacles.length - 1; i >= 0; i--) {
+      let obs = game.obstacles[i];
+      obs.x -= game.gameSpeed;
+
+      // Collision box check
+      if (
+        player.x < obs.x + obs.width &&
+        player.x + player.width > obs.x &&
+        player.y < obs.y + obs.height &&
+        player.y + player.height > obs.y
+      ) {
+        if (game.bunaBoost > 0) {
+          // Shielded by Buna Coffee Boost!
+          createParticles(obs.x, obs.y, 15, "#ffde00");
+          game.obstacles.splice(i, 1);
+          AudioEngine.playCoin();
+          continue;
+        }
+
+        // Damage handling
+        AudioEngine.playHit();
+        createParticles(player.x, player.y, 20, "#d92121");
+        game.obstacles.splice(i, 1);
+        game.lives--;
+
+        if (game.lives <= 0) {
+          game.isGameOver = true;
+        } else {
+          showNotification(`Ouch! Lives Left: ${game.lives}`);
+        }
+      }
+
+      // Clean off-screen
+      if (obs.x + obs.width < 0) game.obstacles.splice(i, 1);
+    }
+
+    // Update Collectibles
+    for (let i = game.collectibles.length - 1; i >= 0; i--) {
+      let c = game.collectibles[i];
+      c.x -= game.gameSpeed;
+
+      if (
+        player.x < c.x + c.width &&
+        player.x + player.width > c.x &&
+        player.y < c.y + c.height &&
+        player.y + player.height > c.y
+      ) {
+        AudioEngine.playCoin();
+        if (c.type === "coin") {
+          game.score += 100;
+          showNotification("+100 Axum Coin!");
+        } else if (c.type === "buna") {
+          game.bunaBoost = 250; // Coffee Shield boost
+          showNotification("☕ Buna Boost Active! Shielded!");
+        } else if (c.type === "injera") {
+          if (game.lives < 4) game.lives++;
+          showNotification("🫓 Injera Restored Life!");
+        }
+        createParticles(c.x, c.y, 10, "#ffde00");
+        game.collectibles.splice(i, 1);
+      }
+
+      if (c.x + c.width < 0) game.collectibles.splice(i, 1);
+    }
+
+    // Update Particles
+    for (let i = game.particles.length - 1; i >= 0; i--) {
+      let p = game.particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life--;
+      if (p.life <= 0) game.particles.splice(i, 1);
+    }
+  }
+
+  function draw() {
+    const cfg = LEVEL_CONFIGS[game.level - 1];
+
+    // 1. Draw Environment Background Gradient
+    let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, cfg.bgGradient[0]);
+    grad.addColorStop(1, cfg.bgGradient[1]);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Parallax Distant Sun / Cultural Sun Emblem
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    ctx.beginPath();
+    ctx.arc(canvas.width - 100, 80, 50, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 2. Draw Ground
+    ctx.fillStyle = cfg.groundColor;
+    ctx.fillRect(0, player.groundY + player.baseHeight, canvas.width, canvas.height - (player.groundY + player.baseHeight));
+    
+    // Top ground line
+    ctx.fillStyle = cfg.accentColor;
+    ctx.fillRect(0, player.groundY + player.baseHeight, canvas.width, 4);
+
+    // 3. Draw Player Character (Draws tailored style per level)
+    ctx.save();
+    if (game.bunaBoost > 0) {
+      // Buna Aura Shield
+      ctx.strokeStyle = "#ffde00";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(player.x + player.width / 2, player.y + player.height / 2, player.height * 0.7, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Body
+    ctx.fillStyle = cfg.heroColor;
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // Head / Traditional Shawl accent
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(player.x + 4, player.y + 4, player.width - 8, 12);
+
+    // Eyes / Details
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(player.x + player.width - 10, player.y + 8, 4, 4);
+    ctx.restore();
+
+    // 4. Draw Obstacles
+    for (let obs of game.obstacles) {
+      if (obs.isFlying) {
+        ctx.fillStyle = "#c0392b";
+        ctx.beginPath();
+        ctx.ellipse(obs.x + obs.width / 2, obs.y + obs.height / 2, obs.width / 2, obs.height / 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Wings
+        ctx.fillRect(obs.x + 4, obs.y - 4, 8, 6);
+      } else {
+        ctx.fillStyle = "#2c3e50";
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+        // Detail motif
+        ctx.fillStyle = cfg.accentColor;
+        ctx.fillRect(obs.x + 4, obs.y + 4, obs.width - 8, 4);
+      }
+    }
+
+    // 5. Draw Collectibles
+    for (let c of game.collectibles) {
+      ctx.font = "18px Arial";
+      if (c.type === "coin") ctx.fillText("🪙", c.x, c.y + 18);
+      else if (c.type === "buna") ctx.fillText("☕", c.x, c.y + 18);
+      else if (c.type === "injera") ctx.fillText("🫓", c.x, c.y + 18);
+    }
+
+    // 6. Draw Particles
+    for (let p of game.particles) {
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, p.size, p.size);
+    }
+
+    // 7. Draw HUD (Heads-Up Display)
+    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+    ctx.fillRect(10, 10, canvas.width - 20, 45);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 15px Segoe UI, sans-serif";
+    ctx.fillText(`SCORE: ${game.score} / 10000`, 24, 36);
+
+    ctx.fillStyle = "#ffde00";
+    ctx.fillText(`LVL ${game.level}: ${cfg.name} (${cfg.hero})`, 220, 36);
+
+    // Lives
+    ctx.fillStyle = "#ffffff";
+    let hearts = "";
+    for (let l = 0; l < game.lives; l++) hearts += "❤️ ";
+    ctx.fillText(`LIVES: ${hearts}`, canvas.width - 180, 36);
+
+    // Level 10 Speed Banner Alert
+    if (game.level === 10 && !game.isGameOver && !game.isGameWon) {
+      ctx.fillStyle = "rgba(217, 33, 33, 0.85)";
+      ctx.fillRect(0, 60, canvas.width, 28);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 14px Segoe UI";
+      ctx.textAlign = "center";
+      ctx.fillText("⚡ MAX SPEED! DANAKIL SPRINT TO 10,000 PTS! ⚡", canvas.width / 2, 79);
+      ctx.textAlign = "left";
+    }
+
+    // Floating notifications
+    for (let i = game.notifications.length - 1; i >= 0; i--) {
+      let n = game.notifications[i];
+      ctx.fillStyle = `rgba(255, 222, 0, ${n.alpha})`;
+      ctx.font = "bold 16px Segoe UI";
+      ctx.fillText(n.text, 24, n.y);
+      n.y -= 0.5;
+      n.alpha -= 0.015;
+      if (n.alpha <= 0) game.notifications.splice(i, 1);
+    }
+
+    // Game Over Overlay
+    if (game.isGameOver) {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#d92121";
+      ctx.font = "bold 36px Segoe UI";
+      ctx.textAlign = "center";
+      ctx.fillText("GAME OVER", canvas.width / 2, 120);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "18px Segoe UI";
+      ctx.fillText(`You reached Level ${game.level} (${cfg.name}) with ${game.score} points.`, canvas.width / 2, 165);
+
+      ctx.fillStyle = "#ffde00";
+      ctx.font = "bold 18px Segoe UI";
+      ctx.fillText("Press SPACE or TAP JUMP to Try Again!", canvas.width / 2, 210);
+      ctx.textAlign = "left";
+    }
+
+    // Victory Overlay (10,000 Points Reached)
+    if (game.isGameWon) {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.88)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#009b48";
+      ctx.font = "bold 34px Segoe UI";
+      ctx.textAlign = "center";
+      ctx.fillText("🎉 CONGRATULATIONS! YOU WON! 🎉", canvas.width / 2, 100);
+
+      ctx.fillStyle = "#ffde00";
+      ctx.font = "bold 20px Segoe UI";
+      ctx.fillText("🏆 Master of Ethiopian History & Culture 🏆", canvas.width / 2, 145);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "16px Segoe UI";
+      ctx.fillText("You completed all 10 levels and scored 10,000 Points!", canvas.width / 2, 185);
+
+      ctx.fillStyle = "#009b48";
+      ctx.fillText("Press SPACE or TAP JUMP to play again!", canvas.width / 2, 230);
+      ctx.textAlign = "left";
+    }
+  }
+
+  function resetGame() {
+    game.score = 0;
+    game.level = 1;
+    game.gameSpeed = 6;
+    game.isGameOver = false;
+    game.isGameWon = false;
+    game.lives = 3;
+    game.bunaBoost = 0;
+    game.obstacles = [];
+    game.collectibles = [];
+    game.particles = [];
+    document.getElementById("levelSelect").value = "1";
+    player.y = player.groundY;
+  }
+
+  function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+  }
+
+  // Launch game
+  gameLoop();
+</script>
+</body>
+</html>
