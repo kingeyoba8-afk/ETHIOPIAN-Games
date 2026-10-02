@@ -10,7 +10,8 @@
       --eth-green: #009b48;
       --eth-yellow: #ffde00;
       --eth-red: #d92121;
-      --panel-bg: #1a1d24;
+      --eth-blue: #0033a0;
+      --panel-bg: #16181f;
     }
 
     * {
@@ -21,7 +22,7 @@
     }
 
     body {
-      background-color: #0f1015;
+      background-color: #0b0c10;
       color: #f0f0f0;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       min-height: 100vh;
@@ -33,15 +34,24 @@
       padding: 8px;
     }
 
+    /* Container for canvas responsive fitting */
+    #game-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 920px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
     #canvas-container {
       position: relative;
       width: 100%;
-      max-width: 900px;
-      aspect-ratio: 16 / 8;
+      aspect-ratio: 16 / 8.5;
       background: #000;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 12px 36px rgba(0,0,0,0.8), 0 0 0 3px #2d323f;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.85), 0 0 0 3px #2a2e3d;
     }
 
     canvas {
@@ -51,38 +61,95 @@
     }
 
     .btn-action {
-      transition: all 0.1s ease;
-      box-shadow: 0 4px 0 rgba(0,0,0,0.4);
+      transition: all 0.12s ease;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.5);
     }
     .btn-action:active {
       transform: translateY(3px);
-      box-shadow: 0 1px 0 rgba(0,0,0,0.4);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.5);
+    }
+
+    /* Ethiopian Horizontal Tricolor Flag with Star */
+    .eth-flag {
+      display: flex;
+      flex-direction: column;
+      width: 38px;
+      height: 24px;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.2);
+      shrink: 0;
+    }
+    .eth-flag-stripe {
+      flex: 1;
+      width: 100%;
+    }
+    .eth-flag-star {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px;
+      height: 12px;
+      background-color: var(--eth-blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: var(--eth-yellow);
+      line-height: 1;
+    }
+
+    /* Glassmorphic Modal */
+    .modal-overlay {
+      background: rgba(10, 12, 18, 0.85);
+      backdrop-filter: blur(6px);
     }
   </style>
 </head>
 <body>
 
-<div class="w-full max-w-4xl flex flex-col items-center gap-3">
+<div id="game-wrapper">
   
-  <!-- Header with clean responsive layout -->
-  <header class="w-full bg-[#181a20] border-b-4 border-[#ffde00] rounded-2xl p-3 sm:p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
-    <div class="flex items-center gap-3">
-      <!-- Ethiopian Flag Icon -->
-      <div class="flex h-6 w-10 rounded border border-white/20 overflow-hidden shrink-0">
-        <span class="flex-1 bg-[#009b48]"></span>
-        <span class="flex-1 bg-[#ffde00]"></span>
-        <span class="flex-1 bg-[#d92121]"></span>
+  <!-- Header with Correct Ethiopian Flag & Title -->
+  <header class="w-full bg-[#16181f] border-b-4 border-[#ffde00] rounded-2xl p-3 sm:p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+    <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+      <div class="flex items-center gap-3">
+        <!-- Official Ethiopian Horizontal Flag with Emblem -->
+        <div class="eth-flag">
+          <div class="eth-flag-stripe bg-[#009b48]"></div>
+          <div class="eth-flag-stripe bg-[#ffde00]"></div>
+          <div class="eth-flag-stripe bg-[#d92121]"></div>
+          <div class="eth-flag-star">★</div>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-xl font-black text-white tracking-wide leading-tight">ETHIOPIAN ADVENTURE RUNNER</h1>
+          <p class="text-xs text-amber-400 font-semibold">10 Historic Tourism Levels • Reach 10,000 Points!</p>
+        </div>
       </div>
-      <div>
-        <h1 class="text-lg sm:text-xl font-extrabold text-white tracking-wide">ETHIOPIAN ADVENTURE RUNNER</h1>
-        <p class="text-xs text-amber-400 font-medium">10 Historic Tourism Levels • Sprint to 10,000 Points!</p>
+
+      <!-- Fullscreen & Character Select Quick Mobile Trigger -->
+      <div class="flex sm:hidden gap-1.5">
+        <button id="btnMobileChar" class="bg-[#282d3c] hover:bg-[#363c50] text-amber-300 p-2 rounded-lg text-xs font-bold border border-gray-700">
+          👤 Hero
+        </button>
+        <button id="btnFullscreenMobile" class="bg-[#282d3c] hover:bg-[#363c50] text-white p-2 rounded-lg text-xs font-bold border border-gray-700">
+          ⛶
+        </button>
       </div>
     </div>
     
-    <!-- Level Selector Dropdown -->
-    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-      <label for="levelSelect" class="text-xs text-gray-300 font-semibold whitespace-nowrap">Jump to:</label>
-      <select id="levelSelect" class="bg-[#262a36] text-white text-xs font-bold py-1.5 px-3 rounded-lg border border-gray-600 focus:outline-none focus:border-amber-400 w-full sm:w-auto">
+    <!-- Top Interactive Controls Bar -->
+    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+      <!-- Select Character Button -->
+      <button id="btnSelectChar" class="hidden sm:flex items-center gap-1.5 bg-[#252a38] hover:bg-[#32394a] text-amber-300 text-xs font-bold py-2 px-3 rounded-xl border border-amber-400/30 transition">
+        <span>👤</span> <span id="lblActiveHero">Abebe Bikila</span>
+      </button>
+
+      <!-- Level Selector -->
+      <select id="levelSelect" class="bg-[#252a38] text-white text-xs font-bold py-2 px-3 rounded-xl border border-gray-600 focus:outline-none focus:border-amber-400">
         <option value="1">Lvl 1: Addis Ababa (0pt)</option>
         <option value="2">Lvl 2: Sof Omar Caves (1k)</option>
         <option value="3">Lvl 3: Axum Empire (2k)</option>
@@ -90,37 +157,89 @@
         <option value="5">Lvl 5: Gondar Castles (4k)</option>
         <option value="6">Lvl 6: Simien Mountains (5k)</option>
         <option value="7">Lvl 7: Harar Walled City (6k)</option>
-        <option value="8">Lvl 8: Rome 1960 - Bikila (7k)</option>
+        <option value="8">Lvl 8: Tis Abay Falls (7k)</option>
         <option value="9">Lvl 9: Battle of Adwa (8k)</option>
         <option value="10">⚡ Lvl 10: Danakil Lava Sprint (9k)</option>
       </select>
+
+      <!-- Pause/Resume Button -->
+      <button id="btnPause" class="bg-[#282d3c] hover:bg-[#383f54] text-white text-xs font-bold py-2 px-3 rounded-xl border border-gray-600">
+        ⏸️ Pause
+      </button>
+
+      <!-- Restart Game Button -->
+      <button id="btnRestart" class="bg-[#d92121] hover:bg-[#f02828] text-white text-xs font-bold py-2 px-3 rounded-xl shadow">
+        🔄 Restart
+      </button>
+
+      <!-- Desktop Fullscreen Button -->
+      <button id="btnFullscreen" class="hidden sm:block bg-[#282d3c] hover:bg-[#383f54] text-white text-xs font-bold py-2 px-3 rounded-xl border border-gray-600">
+        ⛶ Fullscreen
+      </button>
     </div>
   </header>
 
+  <!-- Canvas Viewport with Overlays -->
   <div id="canvas-container">
-    <canvas id="gameCanvas" width="900" height="450"></canvas>
+    <canvas id="gameCanvas" width="920" height="460"></canvas>
+
+    <!-- Pause Screen Overlay -->
+    <div id="pauseOverlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4 z-20">
+      <h2 class="text-3xl font-black text-amber-400 mb-2">GAME PAUSED</h2>
+      <p class="text-sm text-gray-300 mb-6">Take a coffee break (Buna time) ☕</p>
+      <div class="flex gap-4">
+        <button id="btnResume" class="bg-[#009b48] hover:bg-[#00b856] text-white font-extrabold px-6 py-3 rounded-xl text-sm shadow-lg">
+          ▶️ RESUME GAME
+        </button>
+        <button id="btnStartOver" class="bg-[#d92121] hover:bg-[#ef2b2b] text-white font-extrabold px-6 py-3 rounded-xl text-sm shadow-lg">
+          🔄 RESTART LEVEL
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Keyboard / Touch Instruction Banner -->
-  <div class="w-full bg-[#181a20] rounded-xl px-4 py-2 flex flex-wrap justify-between items-center text-xs text-gray-400 border border-gray-800 gap-2">
+  <!-- Instruction Banner -->
+  <div class="w-full bg-[#16181f] rounded-xl px-4 py-2 flex flex-wrap justify-between items-center text-xs text-gray-400 border border-gray-800 gap-2">
     <div>🎮 <strong>Controls:</strong> <span class="bg-gray-800 text-white px-2 py-0.5 rounded font-mono">SPACE / UP</span> Jump | <span class="bg-gray-800 text-white px-2 py-0.5 rounded font-mono">DOWN / S</span> Duck</div>
-    <div class="text-amber-400 font-semibold">Goal: Finish Level 10 at 10,000 Points!</div>
+    <div class="text-amber-400 font-bold">Goal: Reach 10,000 Points to Win the Crown 🏆</div>
   </div>
 
   <!-- Mobile On-Screen Action Buttons -->
   <div class="grid grid-cols-2 gap-3 w-full">
-    <button id="btnDuck" class="btn-action bg-[#2d323f] hover:bg-[#3b4253] text-white font-black py-3.5 sm:py-4 rounded-xl text-base sm:text-lg flex items-center justify-center gap-2 border-b-4 border-gray-900 active:border-b-0">
+    <button id="btnDuck" class="btn-action bg-[#232734] hover:bg-[#32384a] text-white font-black py-4 rounded-xl text-base sm:text-lg flex items-center justify-center gap-2 border-b-4 border-gray-900 active:border-b-0">
       👇 DUCK / SLIDE
     </button>
-    <button id="btnJump" class="btn-action bg-[#009b48] hover:bg-[#00b856] text-white font-black py-3.5 sm:py-4 rounded-xl text-base sm:text-lg flex items-center justify-center gap-2 border-b-4 border-green-900 active:border-b-0">
+    <button id="btnJump" class="btn-action bg-[#009b48] hover:bg-[#00b856] text-white font-black py-4 rounded-xl text-base sm:text-lg flex items-center justify-center gap-2 border-b-4 border-green-950 active:border-b-0">
       ⬆️ JUMP
     </button>
   </div>
 
 </div>
 
+<!-- Character / Runner Selection Modal -->
+<div id="charModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
+  <div class="bg-[#181b24] border-2 border-amber-400 rounded-2xl max-w-md w-full p-5 shadow-2xl text-white">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-black text-amber-400 flex items-center gap-2">
+        <span>🏃‍♂️</span> SELECT YOUR HERO
+      </h2>
+      <button id="btnCloseCharModal" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+    </div>
+    
+    <p class="text-xs text-gray-300 mb-4">Choose your Ethiopian legend. Each runner brings unique perks!</p>
+
+    <div id="heroList" class="flex flex-col gap-2.5 max-h-80 overflow-y-auto pr-1">
+      <!-- Options injected dynamically by JS -->
+    </div>
+
+    <button id="btnConfirmHero" class="mt-4 w-full bg-[#009b48] hover:bg-[#00b856] text-white font-bold py-3 rounded-xl text-sm shadow">
+      Confirm & Play
+    </button>
+  </div>
+</div>
+
 <script>
-  // Web Audio API Synthesizer (Zero external file dependencies)
+  // Web Audio Synthesizer
   const AudioEngine = {
     ctx: null,
     init() {
@@ -135,7 +254,7 @@
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(160, this.ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(480, this.ctx.currentTime + 0.12);
-      gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0.22, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
       osc.connect(gain);
       gain.connect(this.ctx.destination);
@@ -187,15 +306,50 @@
     }
   };
 
+  // Playable Heroes List
+  const HEROES = [
+    {
+      id: "bikila",
+      name: "Abebe Bikila",
+      title: "Barefoot Olympic Legend",
+      perk: "⚡ +10% Speed & Barefoot Agility",
+      color: "#1565c0",
+      barefoot: true
+    },
+    {
+      id: "tulu",
+      name: "Derartu Tulu",
+      title: "Highland Marathon Queen",
+      perk: "❤️ Starts with +1 Extra Life",
+      color: "#e67e22",
+      barefoot: false
+    },
+    {
+      id: "ezana",
+      name: "King Ezana",
+      title: "Axumite Emperor",
+      perk: "☕ 1.5x Longer Buna Shield Duration",
+      color: "#8e44ad",
+      barefoot: false
+    },
+    {
+      id: "runner",
+      name: "City Runner",
+      title: "Addis Ababa Youth",
+      perk: "🪙 Balanced Athletics & Coin Magnet",
+      color: "#009b48",
+      barefoot: false
+    }
+  ];
+
+  // 10 Distinct Ethiopian Tourism Levels
   const LEVEL_CONFIGS = [
     {
       lvl: 1,
       name: "Addis Ababa Streets",
       landmark: "Meskel Square & Light Rail",
-      hero: "City Runner",
-      heroColor: "#009b48",
-      bgGradient: ["#2b5876", "#4e4376"],
-      groundColor: "#33333d",
+      bgGradient: ["#1c2833", "#34495e"],
+      groundColor: "#2b303a",
       accentColor: "#f1c40f",
       obstacleTypes: ["taxi", "cone"],
       flyingTypes: ["pigeon"]
@@ -204,10 +358,8 @@
       lvl: 2,
       name: "Sof Omar Caves",
       landmark: "Limestone Pillars & Rift River",
-      hero: "Explorer",
-      heroColor: "#d35400",
-      bgGradient: ["#1a0f0a", "#3d2314"],
-      groundColor: "#2b1810",
+      bgGradient: ["#150b07", "#361b10"],
+      groundColor: "#21120a",
       accentColor: "#e67e22",
       obstacleTypes: ["stalagmite", "boulder"],
       flyingTypes: ["bat"]
@@ -216,10 +368,8 @@
       lvl: 3,
       name: "Axum Kingdom",
       landmark: "Great Northern Stelae",
-      hero: "Axumite Royal",
-      heroColor: "#8e44ad",
-      bgGradient: ["#1f1c2c", "#928dab"],
-      groundColor: "#4b4b54",
+      bgGradient: ["#1a1728", "#837d9c"],
+      groundColor: "#3c3c45",
       accentColor: "#f39c12",
       obstacleTypes: ["stela_base", "urn"],
       flyingTypes: ["falcon"]
@@ -228,10 +378,8 @@
       lvl: 4,
       name: "Lalibela Rock Churches",
       landmark: "Bet Giyorgis Cross Church",
-      hero: "Habesha Monk",
-      heroColor: "#e67e22",
-      bgGradient: ["#451205", "#8d3214"],
-      groundColor: "#5c2411",
+      bgGradient: ["#3b0e03", "#7a2a0f"],
+      groundColor: "#4d1d0c",
       accentColor: "#f1c40f",
       obstacleTypes: ["rock_block", "trench"],
       flyingTypes: ["raven"]
@@ -240,10 +388,8 @@
       lvl: 5,
       name: "Gondar Royal Enclosure",
       landmark: "Fasilides Castle Towers",
-      hero: "Gondar Guard",
-      heroColor: "#2980b9",
-      bgGradient: ["#1c2833", "#4f5b66"],
-      groundColor: "#34495e",
+      bgGradient: ["#16222f", "#414d59"],
+      groundColor: "#2c3e50",
       accentColor: "#f1c40f",
       obstacleTypes: ["barrel", "wall"],
       flyingTypes: ["hawk"]
@@ -251,11 +397,9 @@
     {
       lvl: 6,
       name: "Simien Mountains",
-      landmark: "Ras Dashen Peaks & Cliffs",
-      hero: "Highland Athlete",
-      heroColor: "#27ae60",
-      bgGradient: ["#0b3024", "#1e6b52"],
-      groundColor: "#1b4d3e",
+      landmark: "Ras Dashen Peaks & Gelada Baboons",
+      bgGradient: ["#07241b", "#165944"],
+      groundColor: "#143d31",
       accentColor: "#a2d9ce",
       obstacleTypes: ["sharp_boulder", "bush"],
       flyingTypes: ["vulture"]
@@ -263,35 +407,29 @@
     {
       lvl: 7,
       name: "Harar Jugol (Walled City)",
-      landmark: "Historic Gates & Minarets",
-      hero: "Harari Trader",
-      heroColor: "#e67e22",
-      bgGradient: ["#4a1f0d", "#9e481c"],
-      groundColor: "#612c12",
+      landmark: "Historic Gates & Alleyways",
+      bgGradient: ["#3d180a", "#853a15"],
+      groundColor: "#52230e",
       accentColor: "#2ecc71",
       obstacleTypes: ["spice_bag", "hyena"],
       flyingTypes: ["eagle"]
     },
     {
       lvl: 8,
-      name: "Rome 1960 Marathon",
-      landmark: "Roman Colosseum & Arch",
-      hero: "Barefoot Abebe Bikila",
-      heroColor: "#1565c0",
-      bgGradient: ["#0d1b2a", "#1b263b"],
-      groundColor: "#415a77",
-      accentColor: "#f4d03f",
-      obstacleTypes: ["hurdle", "classic_car"],
-      flyingTypes: ["arch_low"]
+      name: "Tis Abay - Blue Nile Falls",
+      landmark: "Great Falls & Lake Tana Monasteries",
+      bgGradient: ["#0a233c", "#1d5873"],
+      groundColor: "#123d4e",
+      accentColor: "#00d2ff",
+      obstacleTypes: ["water_rock", "river_log"],
+      flyingTypes: ["pelican"]
     },
     {
       lvl: 9,
       name: "Battle of Adwa (1896)",
-      landmark: "Adwa Mountain Fortress",
-      hero: "Emperor Menelik II",
-      heroColor: "#b71c1c",
-      bgGradient: ["#2b0000", "#5c0606"],
-      groundColor: "#3b0c0c",
+      landmark: "Adwa Mountain Fortress & Victory Banners",
+      bgGradient: ["#240000", "#540505"],
+      groundColor: "#360a0a",
       accentColor: "#ffc107",
       obstacleTypes: ["cannon", "sandbag"],
       flyingTypes: ["smoke_cloud"]
@@ -300,10 +438,8 @@
       lvl: 10,
       name: "Danakil Lava Sprint",
       landmark: "Erta Ale Volcano & Salt Lake",
-      hero: "Fire Runner",
-      heroColor: "#ff3d00",
-      bgGradient: ["#1a0000", "#660000"],
-      groundColor: "#260000",
+      bgGradient: ["#170000", "#5c0000"],
+      groundColor: "#240000",
       accentColor: "#ffea00",
       obstacleTypes: ["lava_crack", "salt_pillar"],
       flyingTypes: ["fireball"]
@@ -317,33 +453,121 @@
     score: 0,
     level: 1,
     gameSpeed: 6.5,
+    isPaused: false,
     isGameOver: false,
     isGameWon: false,
     frameCount: 0,
     lives: 3,
+    maxLives: 3,
     bunaBoost: 0,
+    activeHero: HEROES[0],
     particles: [],
     obstacles: [],
     collectibles: [],
     notifications: []
   };
 
-  // Player physics state
   const player = {
     x: 90,
-    y: 310,
-    width: 42,
-    height: 70,
-    baseHeight: 70,
+    y: 320,
+    width: 44,
+    height: 72,
+    baseHeight: 72,
     duckHeight: 38,
     velocityY: 0,
-    gravity: 0.8,
+    gravity: 0.82,
     isJumping: false,
     isDucking: false,
-    jumpStrength: -15,
-    groundY: 310
+    jumpStrength: -15.5,
+    groundY: 320
   };
 
+  let selectedHeroIndex = 0;
+
+  function initHeroSelectionModal() {
+    const listContainer = document.getElementById("heroList");
+    listContainer.innerHTML = "";
+
+    HEROES.forEach((h, index) => {
+      const card = document.createElement("div");
+      card.className = `p-3 rounded-xl border-2 cursor-pointer transition flex items-center justify-between ${index === selectedHeroIndex ? 'border-amber-400 bg-amber-400/10' : 'border-gray-700 bg-[#212532]'}`;
+      card.onclick = () => {
+        selectedHeroIndex = index;
+        initHeroSelectionModal();
+      };
+
+      card.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center font-black text-white" style="background-color: ${h.color}">
+            ${h.name.charAt(0)}
+          </div>
+          <div>
+            <div class="font-bold text-sm text-white">${h.name}</div>
+            <div class="text-xs text-amber-300 font-medium">${h.title}</div>
+            <div class="text-[11px] text-gray-400 mt-0.5">${h.perk}</div>
+          </div>
+        </div>
+        ${index === selectedHeroIndex ? '<span class="text-amber-400 font-extrabold text-lg">✓</span>' : ''}
+      `;
+      listContainer.appendChild(card);
+    });
+  }
+
+  function applyActiveHero() {
+    game.activeHero = HEROES[selectedHeroIndex];
+    document.getElementById("lblActiveHero").innerText = game.activeHero.name;
+    game.lives = game.activeHero.id === 'tulu' ? 4 : 3;
+    game.maxLives = game.lives;
+    showNotification(`Selected Hero: ${game.activeHero.name}!`);
+  }
+
+  document.getElementById("btnSelectChar").onclick = () => {
+    initHeroSelectionModal();
+    document.getElementById("charModal").classList.remove("hidden");
+  };
+  document.getElementById("btnMobileChar").onclick = () => {
+    initHeroSelectionModal();
+    document.getElementById("charModal").classList.remove("hidden");
+  };
+  document.getElementById("btnCloseCharModal").onclick = () => {
+    document.getElementById("charModal").classList.add("hidden");
+  };
+  document.getElementById("btnConfirmHero").onclick = () => {
+    applyActiveHero();
+    document.getElementById("charModal").classList.add("hidden");
+  };
+
+  // Pause / Resume / Fullscreen Controls
+  document.getElementById("btnPause").onclick = togglePause;
+  document.getElementById("btnResume").onclick = togglePause;
+  document.getElementById("btnRestart").onclick = resetGame;
+  document.getElementById("btnStartOver").onclick = () => { togglePause(); resetGame(); };
+
+  function togglePause() {
+    if (game.isGameOver || game.isGameWon) return;
+    game.isPaused = !game.isPaused;
+    const overlay = document.getElementById("pauseOverlay");
+    if (game.isPaused) {
+      overlay.classList.remove("hidden");
+    } else {
+      overlay.classList.add("hidden");
+    }
+  }
+
+  function toggleFullscreen() {
+    const elem = document.getElementById("canvas-container");
+    if (!document.fullscreenElement) {
+      if (elem.requestFullscreen) elem.requestFullscreen();
+      else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen();
+    }
+  }
+
+  document.getElementById("btnFullscreen").onclick = toggleFullscreen;
+  document.getElementById("btnFullscreenMobile").onclick = toggleFullscreen;
+
+  // Key Event Listeners
   window.addEventListener("keydown", (e) => {
     AudioEngine.init();
     if (["Space", "ArrowUp", "KeyW"].includes(e.code)) {
@@ -354,9 +578,8 @@
       e.preventDefault();
       triggerDuck(true);
     }
-    if (e.code === "KeyR" && (game.isGameOver || game.isGameWon)) {
-      resetGame();
-    }
+    if (e.code === "KeyP") togglePause();
+    if (e.code === "KeyR" && (game.isGameOver || game.isGameWon)) resetGame();
   });
 
   window.addEventListener("keyup", (e) => {
@@ -387,6 +610,7 @@
   });
 
   function triggerJump() {
+    if (game.isPaused) return;
     if (game.isGameOver || game.isGameWon) {
       resetGame();
       return;
@@ -395,11 +619,12 @@
       player.velocityY = player.jumpStrength;
       player.isJumping = true;
       AudioEngine.playJump();
-      createParticles(player.x + player.width / 2, player.y + player.height, 10, "#d1d5db");
+      createParticles(player.x + player.width / 2, player.y + player.height, 10, "#e2e8f0");
     }
   }
 
   function triggerDuck(ducking) {
+    if (game.isPaused) return;
     player.isDucking = ducking;
     if (ducking) {
       player.height = player.duckHeight;
@@ -444,58 +669,56 @@
       createParticles(canvas.width / 2, canvas.height / 2, 50, "#ffde00");
     }
 
-    // Speed formula: levels 1-9 increase smoothly, level 10 goes FAST
-    if (game.level < 10) {
-      game.gameSpeed = 6.5 + (game.level * 0.95);
-    } else {
-      game.gameSpeed = 16; // HIGH SPEED DANAKIL SPRINT
-    }
+    // Speed formula: levels 1-9 smoothly ramp up, Level 10 goes HIGH SPEED
+    let baseSpeed = game.level < 10 ? 6.5 + (game.level * 0.95) : 16;
+    if (game.activeHero.id === 'bikila') baseSpeed *= 1.08; // Bikila perk
+    game.gameSpeed = baseSpeed;
   }
 
   function spawnEntities() {
     const cfg = LEVEL_CONFIGS[game.level - 1];
-    let spawnRate = Math.max(30, Math.floor(90 / (game.gameSpeed / 6)));
+    let spawnRate = Math.max(28, Math.floor(88 / (game.gameSpeed / 6)));
 
-    if (game.frameCount % spawnRate === 0 && Math.random() < 0.8) {
+    if (game.frameCount % spawnRate === 0 && Math.random() < 0.82) {
       const isFlying = Math.random() < 0.32;
 
       if (isFlying) {
         game.obstacles.push({
           x: canvas.width,
-          y: player.groundY - 40 - (Math.random() > 0.5 ? 45 : 0),
-          width: 34,
-          height: 26,
+          y: player.groundY - 38 - (Math.random() > 0.5 ? 45 : 0),
+          width: 36,
+          height: 28,
           isFlying: true,
           type: cfg.flyingTypes[0]
         });
       } else {
         game.obstacles.push({
           x: canvas.width,
-          y: player.groundY + (player.baseHeight - 48),
-          width: 32,
-          height: 48,
+          y: player.groundY + (player.baseHeight - 50),
+          width: 34,
+          height: 50,
           isFlying: false,
           type: cfg.obstacleTypes[Math.floor(Math.random() * cfg.obstacleTypes.length)]
         });
       }
     }
 
-    // Power-ups and Coins
-    if (game.frameCount % 160 === 0 && Math.random() < 0.65) {
+    // Collectibles (Coins, Buna, Injera)
+    if (game.frameCount % 150 === 0 && Math.random() < 0.7) {
       const types = ["coin", "buna", "injera"];
       const randType = types[Math.floor(Math.random() * types.length)];
       game.collectibles.push({
         x: canvas.width,
-        y: player.groundY - 30 - Math.random() * 80,
-        width: 28,
-        height: 28,
+        y: player.groundY - 35 - Math.random() * 85,
+        width: 30,
+        height: 30,
         type: randType
       });
     }
   }
 
   function update() {
-    if (game.isGameOver || game.isGameWon) return;
+    if (game.isGameOver || game.isGameWon || game.isPaused) return;
 
     game.frameCount++;
     game.score += 2;
@@ -503,7 +726,7 @@
 
     if (game.bunaBoost > 0) game.bunaBoost--;
 
-    // Player Gravity
+    // Gravity
     player.velocityY += player.gravity;
     player.y += player.velocityY;
 
@@ -517,7 +740,7 @@
 
     spawnEntities();
 
-    // Obstacles movement & collision
+    // Obstacles collision
     for (let i = game.obstacles.length - 1; i >= 0; i--) {
       let obs = game.obstacles[i];
       obs.x -= game.gameSpeed;
@@ -529,7 +752,7 @@
         player.y + player.height > obs.y
       ) {
         if (game.bunaBoost > 0) {
-          createParticles(obs.x, obs.y, 18, "#ffde00");
+          createParticles(obs.x, obs.y, 20, "#ffde00");
           game.obstacles.splice(i, 1);
           AudioEngine.playCoin();
           continue;
@@ -550,7 +773,7 @@
       if (obs.x + obs.width < 0) game.obstacles.splice(i, 1);
     }
 
-    // Collectibles movement
+    // Collectibles collection
     for (let i = game.collectibles.length - 1; i >= 0; i--) {
       let c = game.collectibles[i];
       c.x -= game.gameSpeed;
@@ -566,13 +789,19 @@
           game.score += 150;
           showNotification("+150 Axum Coin!");
         } else if (c.type === "buna") {
-          game.bunaBoost = 260;
+          let duration = game.activeHero.id === 'ezana' ? 380 : 260; // Ezana Perk
+          game.bunaBoost = duration;
           showNotification("☕ Buna Boost! Invincible Shield!");
         } else if (c.type === "injera") {
-          if (game.lives < 4) game.lives++;
-          showNotification("🫓 Injera Restored 1 Life!");
+          if (game.lives < game.maxLives) {
+            game.lives++;
+            showNotification("🫓 Injera Restored 1 Life!");
+          } else {
+            game.score += 200;
+            showNotification("🫓 Health Full! +200 Bonus!");
+          }
         }
-        createParticles(c.x, c.y, 12, "#ffde00");
+        createParticles(c.x, c.y, 14, "#ffde00");
         game.collectibles.splice(i, 1);
       }
 
@@ -591,133 +820,125 @@
 
   function drawBackgroundLandmark(lvl) {
     ctx.save();
-    ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
-    ctx.lineWidth = 2;
 
     switch(lvl) {
-      case 1: // Addis Ababa Skyline & Meskel Square / Light Rail
-        ctx.fillRect(150, 180, 70, 170); // City Building
-        ctx.fillRect(240, 140, 90, 210);
-        ctx.fillRect(350, 200, 65, 150);
-        // Light Rail Pillars
-        for (let x = 0; x < canvas.width; x += 120) {
-          ctx.fillRect(x + (game.frameCount * 0.5 % 120), 280, 16, 70);
-          ctx.fillRect(x, 280, 120, 8);
+      case 1: // Addis Ababa Skyline & Light Rail
+        ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+        ctx.fillRect(150, 180, 75, 170);
+        ctx.fillRect(250, 130, 95, 220);
+        ctx.fillRect(360, 190, 70, 160);
+        // Light Rail Elevated Track
+        ctx.fillStyle = "rgba(241, 196, 15, 0.25)";
+        ctx.fillRect(0, 280, canvas.width, 10);
+        for (let x = 0; x < canvas.width; x += 110) {
+          ctx.fillRect(x + (game.frameCount * 0.5 % 110), 280, 16, 70);
         }
         break;
 
-      case 2: // Sof Omar Caves (Stalactites & Cave Pillars)
-        ctx.fillStyle = "rgba(100, 60, 30, 0.35)";
-        // Cave Ceiling Stalactites
-        for (let x = 0; x < canvas.width; x += 80) {
+      case 2: // Sof Omar Caves
+        ctx.fillStyle = "rgba(105, 55, 25, 0.4)";
+        for (let x = 0; x < canvas.width; x += 85) {
           ctx.beginPath();
           ctx.moveTo(x, 0);
-          ctx.lineTo(x + 40, 120 + Math.sin(x) * 30);
-          ctx.lineTo(x + 80, 0);
+          ctx.lineTo(x + 42, 130 + Math.sin(x) * 35);
+          ctx.lineTo(x + 85, 0);
           ctx.fill();
         }
-        // Pillars
-        ctx.fillRect(200, 0, 80, canvas.height);
-        ctx.fillRect(600, 0, 90, canvas.height);
+        ctx.fillRect(220, 0, 85, canvas.height);
+        ctx.fillRect(650, 0, 95, canvas.height);
         break;
 
-      case 3: // Axum Kingdom Obelisks (Stelae)
-        ctx.fillStyle = "rgba(200, 200, 220, 0.22)";
-        // Main Axum Stela
-        const stelaX = 450;
+      case 3: // Axum Kingdom Stelae
+        ctx.fillStyle = "rgba(210, 210, 230, 0.24)";
+        const stelaX = 460;
         ctx.beginPath();
         ctx.moveTo(stelaX, 350);
-        ctx.lineTo(stelaX + 15, 80);
-        ctx.arc(stelaX + 30, 80, 15, Math.PI, 0);
+        ctx.lineTo(stelaX + 15, 70);
+        ctx.arc(stelaX + 30, 70, 15, Math.PI, 0);
         ctx.lineTo(stelaX + 60, 350);
         ctx.fill();
-        // Stela Windows detail
-        ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
-        for (let y = 110; y < 330; y += 30) {
-          ctx.fillRect(stelaX + 18, y, 24, 16);
+        ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+        for (let y = 100; y < 330; y += 28) {
+          ctx.fillRect(stelaX + 18, y, 24, 15);
         }
         break;
 
-      case 4: // Lalibela Bet Giyorgis (Rock-Hewn Cross Church)
-        ctx.fillStyle = "rgba(180, 80, 50, 0.35)";
-        const laliX = 500;
-        // Draw Greek Cross Church Outline
-        ctx.fillRect(laliX, 160, 120, 190);
-        ctx.fillRect(laliX - 40, 200, 200, 60);
-        // Roof Cross motif
+      case 4: // Lalibela Bet Giyorgis (Rock-Hewn Cross)
+        ctx.fillStyle = "rgba(190, 75, 45, 0.35)";
+        const laliX = 510;
+        ctx.fillRect(laliX, 150, 130, 200);
+        ctx.fillRect(laliX - 45, 195, 220, 65);
         ctx.strokeStyle = "#ffde00";
         ctx.lineWidth = 3;
-        ctx.strokeRect(laliX + 40, 170, 40, 40);
+        ctx.strokeRect(laliX + 45, 160, 40, 40);
         break;
 
-      case 5: // Gondar Castles (Fasilides Castle)
-        ctx.fillStyle = "rgba(220, 220, 220, 0.2)";
-        // Castle Base & Battlements
-        ctx.fillRect(380, 150, 180, 200);
-        // Turret Towers
+      case 5: // Gondar Fasilides Castle
+        ctx.fillStyle = "rgba(220, 220, 220, 0.22)";
+        ctx.fillRect(390, 140, 190, 210);
         ctx.beginPath();
-        ctx.arc(380, 140, 35, 0, Math.PI * 2);
-        ctx.arc(560, 140, 35, 0, Math.PI * 2);
+        ctx.arc(390, 130, 38, 0, Math.PI * 2);
+        ctx.arc(580, 130, 38, 0, Math.PI * 2);
         ctx.fill();
         break;
 
-      case 6: // Simien Mountains (Ras Dashen Peaks)
-        ctx.fillStyle = "rgba(40, 120, 80, 0.25)";
+      case 6: // Simien Mountains Peaks
+        ctx.fillStyle = "rgba(35, 115, 75, 0.28)";
         ctx.beginPath();
         ctx.moveTo(0, 350);
-        ctx.lineTo(180, 120);
-        ctx.lineTo(320, 250);
-        ctx.lineTo(520, 90);
-        ctx.lineTo(720, 280);
-        ctx.lineTo(900, 140);
-        ctx.lineTo(900, 350);
+        ctx.lineTo(190, 110);
+        ctx.lineTo(340, 240);
+        ctx.lineTo(540, 80);
+        ctx.lineTo(740, 270);
+        ctx.lineTo(920, 130);
+        ctx.lineTo(920, 350);
         ctx.fill();
         break;
 
-      case 7: // Harar Jugol (Walled City Gates)
-        ctx.fillStyle = "rgba(222, 140, 70, 0.25)";
-        ctx.fillRect(250, 160, 320, 190);
-        // Arch Door
-        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+      case 7: // Harar Walled City Gates
+        ctx.fillStyle = "rgba(225, 135, 60, 0.28)";
+        ctx.fillRect(260, 150, 340, 200);
+        ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
         ctx.beginPath();
-        ctx.arc(410, 280, 60, Math.PI, 0);
+        ctx.arc(430, 280, 65, Math.PI, 0);
         ctx.fill();
         break;
 
-      case 8: // Rome 1960 Marathon (Colosseum & Arches)
-        ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
-        // Colosseum Arches Silhouette
-        for (let x = 200; x < 700; x += 60) {
-          ctx.fillRect(x, 180, 45, 170);
-          ctx.clearRect(x + 8, 200, 29, 50);
-          ctx.clearRect(x + 8, 270, 29, 50);
+      case 8: // Tis Abay (Blue Nile Waterfalls & Lake Tana)
+        ctx.fillStyle = "rgba(0, 210, 255, 0.22)";
+        // Waterfall cascades
+        for (let x = 250; x <= 650; x += 100) {
+          ctx.fillRect(x, 170, 70, 180);
         }
+        // Spray clouds
+        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+        ctx.beginPath();
+        ctx.arc(300, 330, 45, 0, Math.PI * 2);
+        ctx.arc(500, 330, 55, 0, Math.PI * 2);
+        ctx.fill();
         break;
 
-      case 9: // Battle of Adwa (Mountain Peaks & Tents)
-        ctx.fillStyle = "rgba(180, 40, 40, 0.22)";
+      case 9: // Battle of Adwa Mountain Fortress
+        ctx.fillStyle = "rgba(190, 35, 35, 0.25)";
         ctx.beginPath();
-        ctx.moveTo(100, 350);
-        ctx.lineTo(250, 130);
-        ctx.lineTo(400, 350);
-        ctx.lineTo(600, 110);
-        ctx.lineTo(800, 350);
+        ctx.moveTo(80, 350);
+        ctx.lineTo(260, 120);
+        ctx.lineTo(420, 350);
+        ctx.lineTo(620, 100);
+        ctx.lineTo(840, 350);
         ctx.fill();
         break;
 
       case 10: // Danakil Lava & Erta Ale Volcano
-        ctx.fillStyle = "rgba(255, 60, 0, 0.3)";
-        // Glowing Volcano Peak
+        ctx.fillStyle = "rgba(255, 60, 0, 0.35)";
         ctx.beginPath();
-        ctx.moveTo(250, 350);
-        ctx.lineTo(450, 160);
-        ctx.lineTo(650, 350);
+        ctx.moveTo(240, 350);
+        ctx.lineTo(460, 150);
+        ctx.lineTo(680, 350);
         ctx.fill();
-        // Lava plume
-        ctx.fillStyle = "rgba(255, 230, 0, 0.4)";
+        ctx.fillStyle = "rgba(255, 230, 0, 0.45)";
         ctx.beginPath();
-        ctx.arc(450, 150, 30, 0, Math.PI * 2);
+        ctx.arc(460, 140, 32, 0, Math.PI * 2);
         ctx.fill();
         break;
     }
@@ -727,42 +948,38 @@
   function drawPlayer(cfg) {
     ctx.save();
 
-    // Buna Aura Shield Glow
+    // Buna Shield Glow
     if (game.bunaBoost > 0) {
       ctx.strokeStyle = "#ffde00";
       ctx.shadowColor = "#ffde00";
-      ctx.shadowBlur = 15;
+      ctx.shadowBlur = 18;
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.arc(player.x + player.width / 2, player.y + player.height / 2, player.height * 0.75, 0, Math.PI * 2);
+      ctx.arc(player.x + player.width / 2, player.y + player.height / 2, player.height * 0.72, 0, Math.PI * 2);
       ctx.stroke();
       ctx.shadowBlur = 0;
     }
 
-    const runCycle = Math.sin(game.frameCount * 0.35); // Leg movement frequency
+    const runCycle = Math.sin(game.frameCount * 0.38);
 
     if (player.isDucking) {
-      // --- CROUCH / DUCK POSE ---
-      // Torso / Outfit
-      ctx.fillStyle = cfg.heroColor;
+      // Crouch Pose
+      ctx.fillStyle = game.activeHero.color;
       ctx.fillRect(player.x, player.y + 12, player.width, 22);
-      // Head
-      ctx.fillStyle = "#8d5524"; // Skin tone
+      ctx.fillStyle = "#8d5524";
       ctx.beginPath();
       ctx.arc(player.x + player.width - 6, player.y + 10, 12, 0, Math.PI * 2);
       ctx.fill();
-      // Hair / Crown
       ctx.fillStyle = "#111";
       ctx.fillRect(player.x + player.width - 16, player.y - 2, 16, 8);
-      // Sliding Legs
       ctx.fillStyle = "#1e293b";
       ctx.fillRect(player.x - 10, player.y + 26, 28, 10);
     } else {
-      // --- ANIMATED RUNNING POSE ---
+      // Animated Runner Pose
       const headX = player.x + player.width / 2;
       const headY = player.y + 14;
 
-      // 1. Moving Back Leg
+      // Back Leg
       ctx.strokeStyle = "#1e293b";
       ctx.lineWidth = 7;
       ctx.beginPath();
@@ -776,18 +993,18 @@
       }
       ctx.stroke();
 
-      // 2. Torso / Traditional Shirt
-      ctx.fillStyle = cfg.heroColor;
+      // Torso / Jersey
+      ctx.fillStyle = game.activeHero.color;
       ctx.fillRect(player.x + 8, player.y + 22, player.width - 16, 26);
 
-      // Habesha Netela / Shawl Accent
+      // Habesha Netela / Shawl Motif
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(player.x + 10, player.y + 24, player.width - 20, 8);
       ctx.fillStyle = "#ffde00";
       ctx.fillRect(player.x + 10, player.y + 32, player.width - 20, 3);
 
-      // 3. Head & Afro / Royal Crown
-      ctx.fillStyle = "#8d5524"; // Skin tone
+      // Head & Skin Tone
+      ctx.fillStyle = "#8d5524";
       ctx.beginPath();
       ctx.arc(headX + 4, headY, 12, 0, Math.PI * 2);
       ctx.fill();
@@ -804,7 +1021,7 @@
       ctx.fillStyle = "#000000";
       ctx.fillRect(headX + 10, headY - 2, 2, 2);
 
-      // 4. Moving Front Leg
+      // Front Leg
       ctx.strokeStyle = "#2e384d";
       ctx.lineWidth = 7;
       ctx.beginPath();
@@ -818,15 +1035,13 @@
       }
       ctx.stroke();
 
-      // Barefoot / Running Shoe Accent
-      if (game.level === 8) {
-        // Abebe Bikila running barefoot!
-      } else {
-        ctx.fillStyle = "#009b48"; // Green running shoes
+      // Shoes / Barefoot Perk
+      if (!game.activeHero.barefoot) {
+        ctx.fillStyle = "#009b48";
         ctx.fillRect(headX - (runCycle * 22) - 3, player.y + player.height - 4, 10, 5);
       }
 
-      // 5. Moving Arms
+      // Arms
       ctx.strokeStyle = "#8d5524";
       ctx.lineWidth = 5;
       ctx.beginPath();
@@ -841,27 +1056,27 @@
   function draw() {
     const cfg = LEVEL_CONFIGS[game.level - 1];
 
-    // 1. Sky Gradient Background
+    // Sky Background Gradient
     let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
     grad.addColorStop(0, cfg.bgGradient[0]);
     grad.addColorStop(1, cfg.bgGradient[1]);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Parallax Cultural Sun / Moon
-    ctx.fillStyle = "rgba(255, 222, 0, 0.25)";
+    // Sun/Moon
+    ctx.fillStyle = "rgba(255, 222, 0, 0.28)";
     ctx.beginPath();
     ctx.arc(canvas.width - 120, 90, 55, 0, Math.PI * 2);
     ctx.fill();
 
-    // 2. Draw Tourism Landmark Silhouette
+    // Backdrop Landmark
     drawBackgroundLandmark(game.level);
 
-    // 3. Draw Ground
+    // Ground
     ctx.fillStyle = cfg.groundColor;
     ctx.fillRect(0, player.groundY + player.baseHeight, canvas.width, canvas.height - (player.groundY + player.baseHeight));
     
-    // Ethiopian Flag Ground Stripe
+    // Ethiopian Flag Ground Accent Stripe
     ctx.fillStyle = "#009b48";
     ctx.fillRect(0, player.groundY + player.baseHeight, canvas.width, 3);
     ctx.fillStyle = "#ffde00";
@@ -869,17 +1084,16 @@
     ctx.fillStyle = "#d92121";
     ctx.fillRect(0, player.groundY + player.baseHeight + 6, canvas.width, 3);
 
-    // 4. Draw Animated Runner Character
+    // Player Sprite
     drawPlayer(cfg);
 
-    // 5. Draw Obstacles
+    // Obstacles
     for (let obs of game.obstacles) {
       if (obs.isFlying) {
         ctx.fillStyle = "#e74c3c";
         ctx.beginPath();
         ctx.ellipse(obs.x + obs.width / 2, obs.y + obs.height / 2, obs.width / 2, obs.height / 3, 0, 0, Math.PI * 2);
         ctx.fill();
-        // Flapping wings
         const wingY = Math.sin(game.frameCount * 0.4) * 8;
         ctx.fillStyle = "#c0392b";
         ctx.fillRect(obs.x + 6, obs.y - 6 + wingY, 12, 8);
@@ -891,7 +1105,7 @@
       }
     }
 
-    // 6. Draw Collectibles
+    // Collectibles
     for (let c of game.collectibles) {
       ctx.font = "22px Arial";
       if (c.type === "coin") ctx.fillText("🪙", c.x, c.y + 22);
@@ -899,14 +1113,14 @@
       else if (c.type === "injera") ctx.fillText("🫓", c.x, c.y + 22);
     }
 
-    // 7. Draw Particles
+    // Particles
     for (let p of game.particles) {
       ctx.fillStyle = p.color;
       ctx.fillRect(p.x, p.y, p.size, p.size);
     }
 
-    // 8. HUD (Heads Up Display Bar)
-    ctx.fillStyle = "rgba(15, 16, 21, 0.75)";
+    // Top HUD Display Bar
+    ctx.fillStyle = "rgba(15, 16, 21, 0.82)";
     ctx.fillRect(12, 12, canvas.width - 24, 52);
     ctx.strokeStyle = "#ffde00";
     ctx.lineWidth = 1.5;
@@ -914,19 +1128,19 @@
 
     // Score Counter
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 16px Inter, sans-serif";
+    ctx.font = "bold 15px Inter, sans-serif";
     ctx.fillText(`SCORE:`, 26, 42);
     ctx.fillStyle = "#ffde00";
-    ctx.font = "bold 18px Inter, sans-serif";
+    ctx.font = "bold 17px Inter, sans-serif";
     ctx.fillText(`${game.score} / 10,000`, 90, 42);
 
-    // Level Title Badge
+    // Level Badge
     ctx.fillStyle = "#009b48";
-    ctx.fillRect(260, 22, 350, 32);
+    ctx.fillRect(270, 22, 360, 32);
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 14px Inter, sans-serif";
+    ctx.font = "bold 13px Inter, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(`LVL ${game.level}: ${cfg.name}`, 435, 43);
+    ctx.fillText(`LVL ${game.level}: ${cfg.name}`, 450, 43);
     ctx.textAlign = "left";
 
     // Health Lives
@@ -936,7 +1150,7 @@
     for (let l = 0; l < game.lives; l++) hearts += "❤️ ";
     ctx.fillText(`LIVES: ${hearts}`, canvas.width - 190, 42);
 
-    // Level 10 High Speed Alert Banner
+    // High Speed Alert Banner
     if (game.level === 10 && !game.isGameOver && !game.isGameWon) {
       ctx.fillStyle = "rgba(217, 33, 33, 0.9)";
       ctx.fillRect(0, 70, canvas.width, 32);
@@ -958,7 +1172,7 @@
       if (n.alpha <= 0) game.notifications.splice(i, 1);
     }
 
-    // Game Over Overlay
+    // Game Over Screen
     if (game.isGameOver) {
       ctx.fillStyle = "rgba(0, 0, 0, 0.88)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -970,15 +1184,15 @@
 
       ctx.fillStyle = "#ffffff";
       ctx.font = "18px Inter";
-      ctx.fillText(`You reached Level ${game.level} (${cfg.name}) with ${game.score} pts!`, canvas.width / 2, 210);
+      ctx.fillText(`Reached Level ${game.level} (${cfg.name}) with ${game.score} pts!`, canvas.width / 2, 210);
 
       ctx.fillStyle = "#ffde00";
       ctx.font = "bold 18px Inter";
-      ctx.fillText("Press SPACE or TAP JUMP to Play Again!", canvas.width / 2, 260);
+      ctx.fillText("Press RESTART or TAP JUMP to Play Again!", canvas.width / 2, 260);
       ctx.textAlign = "left";
     }
 
-    // Victory Overlay (10,000 Points)
+    // Victory Screen
     if (game.isGameWon) {
       ctx.fillStyle = "rgba(0, 0, 0, 0.92)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -990,15 +1204,15 @@
 
       ctx.fillStyle = "#ffde00";
       ctx.font = "bold 22px Inter";
-      ctx.fillText("🏆 Master Champion of Ethiopian History & Culture 🏆", canvas.width / 2, 190);
+      ctx.fillText("🏆 Champion of Ethiopian History & Heritage 🏆", canvas.width / 2, 190);
 
       ctx.fillStyle = "#ffffff";
       ctx.font = "17px Inter";
-      ctx.fillText("You completed all 10 Levels and reached 10,000 Points!", canvas.width / 2, 235);
+      ctx.fillText(`You conquered all 10 Levels as ${game.activeHero.name}!`, canvas.width / 2, 235);
 
       ctx.fillStyle = "#009b48";
       ctx.font = "bold 18px Inter";
-      ctx.fillText("Press SPACE or TAP JUMP to Restart Victory Lap!", canvas.width / 2, 285);
+      ctx.fillText("Press RESTART or TAP JUMP to Replay!", canvas.width / 2, 285);
       ctx.textAlign = "left";
     }
   }
@@ -1009,12 +1223,15 @@
     game.gameSpeed = 6.5;
     game.isGameOver = false;
     game.isGameWon = false;
-    game.lives = 3;
+    game.isPaused = false;
+    game.lives = game.activeHero.id === 'tulu' ? 4 : 3;
+    game.maxLives = game.lives;
     game.bunaBoost = 0;
     game.obstacles = [];
     game.collectibles = [];
     game.particles = [];
     document.getElementById("levelSelect").value = "1";
+    document.getElementById("pauseOverlay").classList.add("hidden");
     player.y = player.groundY;
   }
 
@@ -1024,8 +1241,9 @@
     requestAnimationFrame(gameLoop);
   }
 
-  // Launch game
-  gameLoop();
+  window.onload = function() {
+    gameLoop();
+  };
 </script>
 </body>
 </html>
